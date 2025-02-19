@@ -7,6 +7,7 @@ from PyQt6.QtWidgets import QApplication, QWidget, QLabel
 from PyQt6.QtCore import Qt
 
 SCREEN_SIZE = [600, 450]
+STEP = [5, 2 , 0.5, 0.025, 0.005, 0.0005, 0.00001]
 
 
 class ShowGeo(QWidget):
@@ -61,6 +62,27 @@ class ShowGeo(QWidget):
         if event.key() == Qt.Key.Key_PageDown:
             self.z -= 1
             self.z = max(self.z, 0)
+            self.show_image()
+
+        if event.key() == Qt.Key.Key_Left:
+            k = STEP[self.z // len(STEP)]
+            if -180 <= self.ll[0] - k <= 180:
+                self.ll[0] -= k
+            self.show_image()
+        if event.key() == Qt.Key.Key_Right:
+            k = STEP[self.z // len(STEP)]
+            if -180 <= self.ll[0] + k <= 180:
+                self.ll[0] += k
+            self.show_image()
+        if event.key() == Qt.Key.Key_Up:
+            k = STEP[self.z // len(STEP)]
+            if -90 <= self.ll[1] + k <= 90:
+                self.ll[1] += k
+            self.show_image()
+        if event.key() == Qt.Key.Key_Down:
+            k = STEP[self.z // len(STEP)]
+            if -90 <= self.ll[1] - k <= 90:
+                self.ll[1] -= k
             self.show_image()
 
 
