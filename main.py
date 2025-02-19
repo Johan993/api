@@ -3,27 +3,31 @@ import sys
 
 import requests
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGraphicsOpacityEffect
 from PyQt6.QtCore import Qt
 
-SCREEN_SIZE = [600, 450]
-STEP = [5, 2 , 0.5, 0.025, 0.005, 0.0005, 0.00001]
+SCREEN_SIZE = [700, 450]
+STEP = [5, 2, 0.5, 0.025, 0.005, 0.0005, 0.00001]
 
 
 class ShowGeo(QWidget):
     def __init__(self):
         super().__init__()
+        self.l = 0
         self.ll = [37.530887, 55.703118]
         self.z = 17
+        self.flag = False
         self.initUI()
         self.show_image()
 
     def getImage(self):
-        apikey = '4dbe104a-d5c7-4d20-bb68-3ae6ac4cae00'
+        apikey = '5a54e317-de13-47f2-a30e-b3736c95bdfb'
+        th = "dark" if self.flag else "light"
         map_params = {
             "ll": ",".join([str(self.ll[0]), str(self.ll[1])]),
             "apikey": apikey,
-            'z': self.z
+            'z': self.z,
+            "theme": th
         }
         map_api_server = "https://static-maps.yandex.ru/v1"
         response = requests.get(map_api_server, params=map_params)
@@ -45,6 +49,15 @@ class ShowGeo(QWidget):
         self.image = QLabel(self)
         self.image.move(0, 0)
         self.image.resize(600, 450)
+        self.btn = QPushButton('Тема', self)
+        self.btn.resize(100, 50)
+        self.btn.move(605, 5)
+        self.btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
+        self.btn.clicked.connect(self.count)
+
+    def count(self):
+        self.flag = not self.flag
+        self.show_image()
 
     def show_image(self):
         self.getImage()
