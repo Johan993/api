@@ -4,6 +4,7 @@ import sys
 import requests
 from PyQt6.QtGui import QPixmap
 from PyQt6.QtWidgets import QApplication, QWidget, QLabel
+from PyQt6.QtCore import Qt
 
 SCREEN_SIZE = [600, 450]
 
@@ -51,6 +52,16 @@ class ShowGeo(QWidget):
 
     def closeEvent(self, event):
         os.remove(self.map_file)
+
+    def keyPressEvent(self, event):
+        if event.key() == Qt.Key.Key_PageUp:
+            self.z += 1
+            self.z = min(self.z, 21)
+            self.show_image()
+        if event.key() == Qt.Key.Key_PageDown:
+            self.z -= 1
+            self.z = max(self.z, 0)
+            self.show_image()
 
 
 if __name__ == '__main__':
