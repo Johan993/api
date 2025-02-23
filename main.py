@@ -3,7 +3,7 @@ import sys
 
 import requests
 from PyQt6.QtGui import QPixmap
-from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGraphicsOpacityEffect
+from PyQt6.QtWidgets import QApplication, QWidget, QLabel, QPushButton, QGraphicsOpacityEffect, QLineEdit
 from PyQt6.QtCore import Qt
 
 SCREEN_SIZE = [700, 450]
@@ -17,6 +17,7 @@ class ShowGeo(QWidget):
         self.ll = [37.530887, 55.703118]
         self.z = 17
         self.flag = False
+        self.marker = None
         self.initUI()
         self.show_image()
 
@@ -54,6 +55,16 @@ class ShowGeo(QWidget):
         self.btn.move(605, 5)
         self.btn.setFocusPolicy(Qt.FocusPolicy.NoFocus)
         self.btn.clicked.connect(self.count)
+        self.search_input = QLineEdit(self)
+        self.search_input.resize(100, 30)
+        self.search_input.move(605, 60)
+        self.search_input.setPlaceholderText("Введите объект")
+        self.search_input.returnPressed.connect(self.search_object)
+
+        self.search_btn = QPushButton('Искать', self)
+        self.search_btn.resize(100, 30)
+        self.search_btn.move(605, 100)
+        self.search_btn.clicked.connect(self.search_object)
 
     def count(self):
         self.flag = not self.flag
@@ -63,6 +74,38 @@ class ShowGeo(QWidget):
         self.getImage()
         self.pixmap = QPixmap(self.map_file)
         self.image.setPixmap(self.pixmap)
+
+    def search_object(self):
+        place = self.search_input.text()
+        if not place:
+            return
+        apikey = '5a54e317-de13-47f2-a30e-b3736c95bdfb'
+        geocoder_api_server = "https://geocode-maps.yandex.ru/1.x/"
+        geocoder_params = {
+            "apikey": apikey,
+            "geocode": place,
+            "format": "json",
+            "results": 1,
+            "lang": "ru_RU"
+        }
+        response = requests.get(geocoder_api_server, params=geocoder_params)
+        if not response:
+            print("Ошибка выполнения запроса геокодирования")
+            return
+
+        json_response = response.json()
+        try:
+            feature_member = json_response["response"]["GeoObjectCollection"]["featureMember"]
+            if not feature_member:
+                print("Объект не найден")
+                return
+            pos = feature_member[0]["GeoObject"]["Point"]["pos"]
+            lon, lat = map(float, pos.split())
+            self.ll = [lon, lat]
+            self.pt = [lon, lat]
+            self.show_image()
+        except (IndexError, KeyError):
+            print("Объект не найден")
 
     def closeEvent(self, event):
         os.remove(self.map_file)
